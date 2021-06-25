@@ -52,6 +52,7 @@ export const App = () => (
           marginBottom: "1em",
           marginTop: "0.25em",
           width: "100%",
+          maxWidth: "100%",
         }}
       >
         {/* <Input name="password" placeholder="foobar" label="Password" /> */}
@@ -60,12 +61,16 @@ export const App = () => (
           placeholder="file.json"
           initialValue={`${random(adjectives)}-${random(nouns)}`}
           label="Slug"
+          divStyle={{ flexShrink: 1 }}
+          inputStyle={{ width: "calc(100% - 0.5em - 2px)" }}
         />
         <Input
           name="contenttype"
           placeholder="application/json"
           label="Content type"
           dataListItems={commonContentTypes}
+          divStyle={{ flexShrink: 1 }}
+          inputStyle={{ width: "calc(100% - 0.5em - 2px)" }}
         />
         <button type="submit">Submit</button>
       </div>

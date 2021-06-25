@@ -6,12 +6,16 @@ export const Input = ({
   dataListItems,
   name,
   initialValue,
+  divStyle,
+  inputStyle,
 }: {
   placeholder: string;
   label?: VNode;
   dataListItems?: string[];
   name?: string;
   initialValue?: string;
+  divStyle?: h.JSX.CSSProperties;
+  inputStyle?: h.JSX.CSSProperties;
 }) => {
   const [uniqueId] = useState(() => `Input--${Math.random().toString()}`);
   const input = (
@@ -21,6 +25,7 @@ export const Input = ({
       list={dataListItems ? `${uniqueId}-datalist` : undefined}
       name={name}
       value={initialValue}
+      style={{ ...inputStyle }}
     />
   );
   const content = dataListItems ? (
@@ -37,7 +42,7 @@ export const Input = ({
   );
 
   return label ? (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", flexDirection: "column", ...divStyle }}>
       <label for={uniqueId}>{label}</label>
       {content}
     </div>
