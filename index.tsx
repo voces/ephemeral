@@ -1,6 +1,6 @@
-// import { h, renderToString } from "./deps.ts";
+import { h, renderToString } from "./deps.ts";
 import { get, set } from "./store.ts";
-// import { App } from "./webapp/App.tsx";
+import { App } from "./webapp/App.tsx";
 
 type FetchEvent = {
   request: Request;
@@ -8,8 +8,6 @@ type FetchEvent = {
 };
 
 const isFetchEvent = (event: Event | FetchEvent): event is FetchEvent => true;
-
-// const css = Deno.readTextFileSync("./webapp/style.css");
 
 addEventListener("fetch", async (event) => {
   if (!isFetchEvent(event)) return;
@@ -76,22 +74,53 @@ addEventListener("fetch", async (event) => {
   }
 
   return event.respondWith(
-    new Response("not yet implemented", { status: 501 })
+    new Response(
+      `<!DOCTYPE html>
+  <html>
+    <style>
+      html {
+        height: 100%;
+      }
+      
+      body {
+        margin: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      input,
+      button,
+      textarea {
+        padding: 0.25em;
+        font-size: inherit;
+        font-family: inherit;
+        border-width: 1px;
+        border-radius: 2px;
+        border-style: inset;
+        border-color: #808080;
+      }
+      
+      button {
+        background-color: white;
+        padding: 0.25em 1em;
+      }
+      
+      input:hover,
+      button:hover,
+      textarea:hover {
+        text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+        box-shadow: 0 0 0.125em rgba(0, 0, 0, 0.4);
+      }
+    </style>
+  </html>
+  <body>
+  ${renderToString(<App />)}
+  </body>`,
+      {
+        headers: { "Content-Type": "text/html" },
+      }
+    )
   );
-  //   return event.respondWith(
-  //     new Response(
-  //       `<!DOCTYPE html>
-  // <html>
-  //   <style>
-  //     ${css}
-  //   </style>
-  // </html>
-  // <body>
-  // ${renderToString(<App />)}
-  // </body>`,
-  //       {
-  //         headers: { "Content-Type": "text/html" },
-  //       }
-  //     )
-  //   );
 });
