@@ -1,6 +1,6 @@
-import { h, renderToString } from "./deps.ts";
+// import { h, renderToString } from "./deps.ts";
 import { get, set } from "./store.ts";
-import { App } from "./webapp/App.tsx";
+// import { App } from "./webapp/App.tsx";
 
 type FetchEvent = {
   request: Request;
@@ -76,19 +76,22 @@ addEventListener("fetch", async (event) => {
   }
 
   return event.respondWith(
-    new Response(
-      `<!DOCTYPE html>
-<html>
-  <style>
-    ${css}
-  </style>
-</html>
-<body>
-${renderToString(<App />)}
-</body>`,
-      {
-        headers: { "Content-Type": "text/html" },
-      }
-    )
+    new Response("not yet implemented", { status: 501 })
   );
+  //   return event.respondWith(
+  //     new Response(
+  //       `<!DOCTYPE html>
+  // <html>
+  //   <style>
+  //     ${css}
+  //   </style>
+  // </html>
+  // <body>
+  // ${renderToString(<App />)}
+  // </body>`,
+  //       {
+  //         headers: { "Content-Type": "text/html" },
+  //       }
+  //     )
+  //   );
 });
