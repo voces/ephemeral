@@ -2,6 +2,10 @@ import { h, renderToString } from "./deps.ts";
 import { get, set } from "./store.ts";
 import { App } from "./webapp/App.tsx";
 
+const css = await fetch(
+  import.meta.url.split("/").slice(0, -1).join("/") + "/webapp/style.css"
+).then((r) => r.text());
+
 type FetchEvent = {
   request: Request;
   respondWith: (response: Response) => void;
@@ -77,43 +81,7 @@ addEventListener("fetch", async (event) => {
     new Response(
       `<!DOCTYPE html>
   <html>
-    <style>
-      html {
-        height: 100%;
-      }
-      
-      body {
-        margin: 0;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-      
-      input,
-      button,
-      textarea {
-        padding: 0.25em;
-        font-size: inherit;
-        font-family: inherit;
-        border-width: 1px;
-        border-radius: 2px;
-        border-style: inset;
-        border-color: #808080;
-      }
-      
-      button {
-        background-color: white;
-        padding: 0.25em 1em;
-      }
-      
-      input:hover,
-      button:hover,
-      textarea:hover {
-        text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
-        cursor: pointer;
-        box-shadow: 0 0 0.125em rgba(0, 0, 0, 0.4);
-      }
-    </style>
+    <style>${css}</style>
   </html>
   <body>
   ${renderToString(<App />)}
