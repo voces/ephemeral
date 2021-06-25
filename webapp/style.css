@@ -33,3 +33,46 @@ textarea:hover {
   cursor: pointer;
   box-shadow: 0 0 0.125em rgba(0, 0, 0, 0.4);
 }
+
+header {
+  padding: 0.25em;
+  box-shadow: 0 0 0.125em black;
+  text-align: center;
+  background-color: white;
+  margin-bottom: 1em;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+  }
+
+  header {
+    background-color: #1e1e1e;
+    box-shadow: 0 0 0.125em #d4d4d4;
+  }
+
+  input,
+  button,
+  textarea {
+    background-color: #222;
+    color: #ccc;
+    border-color: #555;
+    border-style: solid;
+  }
+
+  input:hover,
+  button:hover,
+  textarea:hover {
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 0.125em rgba(255, 255, 255, 0.4);
+  }
+
+  input:focus-visible,
+  button:focus-visible,
+  textarea:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 1px 2px rgb(0, 95, 204);
+  }
+}

@@ -9,15 +9,7 @@ const random = <T extends unknown>(arr: T[]): T =>
 
 export const App = () => (
   <>
-    <header
-      style={{
-        padding: "0.25em",
-        boxShadow: "0 0 0.125em black",
-        textAlign: "center",
-        backgroundColor: "white",
-        marginBottom: "1em",
-      }}
-    >
+    <header>
       <span style={{ fontSize: "125%", fontStyle: "italic" }}>ephemeral</span>
     </header>
     <form
@@ -38,8 +30,6 @@ export const App = () => (
           height: "min(100%, 32em)",
           minWidth: "calc(100% - 0.5em - 2px)",
           minHeight: "4em",
-          fontFamily: "inherit",
-          fontSize: "inherit",
         }}
         placeholder={JSON.stringify({ foo: "bar" }, null, 2)}
       />
@@ -66,7 +56,7 @@ export const App = () => (
         />
         <Input
           name="contenttype"
-          placeholder="application/json"
+          placeholder="text/plain"
           label="Content type"
           dataListItems={commonContentTypes}
           divStyle={{ flexShrink: 1 }}
