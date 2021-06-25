@@ -1,6 +1,6 @@
 import { h, renderToString } from "./deps.ts";
 import { get, set } from "./store.ts";
-import { App } from "./html/App.tsx";
+import { App } from "./webapp/App.tsx";
 
 type FetchEvent = {
   request: Request;
@@ -9,11 +9,7 @@ type FetchEvent = {
 
 const isFetchEvent = (event: Event | FetchEvent): event is FetchEvent => true;
 
-let css = Deno.readTextFileSync("./style.css");
-
-setInterval(() => {
-  Deno.readTextFile("./style.css").then((file) => (css = file));
-}, 1000);
+const css = Deno.readTextFileSync("./webapp/style.css");
 
 addEventListener("fetch", async (event) => {
   if (!isFetchEvent(event)) return;
