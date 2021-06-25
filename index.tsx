@@ -80,12 +80,18 @@ addEventListener("fetch", async (event) => {
   return event.respondWith(
     new Response(
       `<!DOCTYPE html>
+${renderToString(
   <html>
-    <style>${css}</style>
-  </html>
-  <body>
-  ${renderToString(<App />)}
-  </body>`,
+    <head>
+      <style>{css}</style>
+    </head>
+    <body>
+      <App />
+    </body>
+  </html>,
+  undefined,
+  { pretty: true }
+)}`,
       {
         headers: { "Content-Type": "text/html" },
       }
