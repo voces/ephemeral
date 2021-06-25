@@ -9,7 +9,7 @@ type FetchEvent = {
 
 const isFetchEvent = (event: Event | FetchEvent): event is FetchEvent => true;
 
-const css = Deno.readTextFileSync("./webapp/style.css");
+// const css = Deno.readTextFileSync("./webapp/style.css");
 
 addEventListener("fetch", async (event) => {
   if (!isFetchEvent(event)) return;
