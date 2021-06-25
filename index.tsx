@@ -88,9 +88,7 @@ ${renderToString(
     <body>
       <App />
     </body>
-  </html>,
-  undefined,
-  { pretty: true }
+  </html>
 )}`,
       {
         headers: { "Content-Type": "text/html" },
