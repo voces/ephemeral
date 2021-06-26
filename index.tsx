@@ -15,7 +15,9 @@ const isFetchEvent = (event: Event | FetchEvent): event is FetchEvent => true;
 
 addEventListener("fetch", async (event) => {
   if (!isFetchEvent(event)) return;
-  const { pathname, origin } = new URL(event.request.url);
+  const { pathname, origin, searchParams } = new URL(event.request.url);
+
+  const noResponse = typeof searchParams.get("no-response") === "string";
 
   let formBody: Record<string, string | undefined> | undefined;
   if (pathname === "/") {
@@ -61,6 +63,9 @@ addEventListener("fetch", async (event) => {
         : event.request.headers.get("Content-Type")) ?? "text/plain";
 
     set(key, content, contentType);
+
+    if (noResponse)
+      return event.respondWith(new Response(undefined, { status: 201 }));
 
     return event.respondWith(
       formBody
