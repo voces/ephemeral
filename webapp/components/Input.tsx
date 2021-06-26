@@ -8,6 +8,7 @@ export const Input = ({
   initialValue,
   divStyle,
   inputStyle,
+  type,
 }: {
   placeholder?: string;
   label: VNode;
@@ -16,6 +17,7 @@ export const Input = ({
   initialValue?: string;
   divStyle?: h.JSX.CSSProperties;
   inputStyle?: h.JSX.CSSProperties;
+  type?: "password";
 }) => {
   const [uniqueId] = useState(() => `Input--${Math.random().toString()}`);
   const input = (
@@ -26,6 +28,7 @@ export const Input = ({
       name={name}
       value={initialValue}
       style={{ ...inputStyle }}
+      type={type}
     />
   );
   const content = dataListItems ? (

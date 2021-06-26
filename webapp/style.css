@@ -21,17 +21,17 @@ textarea {
   border-color: #808080;
 }
 
-button {
-  background-color: white;
-  padding: 0.25em 1em;
-}
-
 input:hover,
 button:hover,
 textarea:hover {
   text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
   box-shadow: 0 0 0.125em rgba(0, 0, 0, 0.4);
+}
+
+button {
+  background-color: white;
+  padding: 0.25em 1em;
+  cursor: pointer;
 }
 
 header {
