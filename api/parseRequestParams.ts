@@ -4,11 +4,11 @@ export type Params = {
   noResponse: boolean;
   contentType: string;
   redirectToGet: boolean;
-  origin: string;
+  authorization?: string;
 };
 
 export const parseRequest = async (request: Request): Promise<Params> => {
-  const { pathname, origin, searchParams } = new URL(request.url);
+  const { pathname, searchParams } = new URL(request.url);
 
   let formBody: Record<string, string | undefined> | undefined;
   if (pathname === "/") {
@@ -34,10 +34,16 @@ export const parseRequest = async (request: Request): Promise<Params> => {
   // x-www-form-urlencoded
   const contentType =
     (formBody
-      ? formBody?.["contenttype"]
+      ? formBody["contenttype"]
       : request.headers.get("Content-Type")) ?? "text/plain";
 
   const redirectToGet = !!formBody;
 
-  return { slug, noResponse, body, contentType, redirectToGet, origin };
+  const authorization = formBody
+    ? formBody.password
+      ? `Basic ${btoa(`:${formBody.password}`)}`
+      : undefined
+    : request.headers.get("Authorization") ?? undefined;
+
+  return { slug, noResponse, body, contentType, redirectToGet, authorization };
 };

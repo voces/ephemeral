@@ -45,7 +45,7 @@ export const App = () => (
           maxWidth: "100%",
         }}
       >
-        {/* <Input name="password" placeholder="foobar" label="Password" /> */}
+        <Input name="password" label="Password" />
         <Input
           name="path"
           placeholder="file.json"

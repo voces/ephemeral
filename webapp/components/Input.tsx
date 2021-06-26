@@ -9,8 +9,8 @@ export const Input = ({
   divStyle,
   inputStyle,
 }: {
-  placeholder: string;
-  label?: VNode;
+  placeholder?: string;
+  label: VNode;
   dataListItems?: string[];
   name?: string;
   initialValue?: string;
@@ -41,12 +41,10 @@ export const Input = ({
     input
   );
 
-  return label ? (
+  return (
     <div style={{ display: "flex", flexDirection: "column", ...divStyle }}>
       <label for={uniqueId}>{label}</label>
       {content}
     </div>
-  ) : (
-    content
   );
 };

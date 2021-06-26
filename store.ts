@@ -1,17 +1,34 @@
-type Article = { content: string; contentType: string };
+type Resource = {
+  content: string;
+  contentType: string;
+  authorization: string | undefined;
+};
 
-const store: Record<string, Article | undefined> = {};
+const store: Record<string, Resource | undefined> = {};
 
 const channel = new BroadcastChannel("store");
 
 channel.onmessage = (event: MessageEvent) => {
-  const { action, slug, content, contentType } = JSON.parse(event.data);
-  if (action === "add") store[slug] = { content, contentType };
+  const { action, slug, content, contentType, authorization } = JSON.parse(
+    event.data
+  ) as Resource & { action: "add"; slug: string };
+  if (action === "add") store[slug] = { content, contentType, authorization };
 };
 
-export const set = (slug: string, content: string, contentType: string) => {
-  store[slug] = { content, contentType };
-  channel.postMessage({ action: "add", slug, content, contentType });
+export const set = (
+  slug: string,
+  content: string,
+  contentType: string,
+  authorization?: string
+) => {
+  store[slug] = { content, contentType, authorization };
+  channel.postMessage({
+    action: "add",
+    slug,
+    content,
+    contentType,
+    authorization,
+  });
 };
 
-export const get = (slug: string): Article | undefined => store[slug];
+export const get = (slug: string): Resource | undefined => store[slug];

@@ -1,14 +1,11 @@
 import { get, set } from "../store.ts";
 import { Params } from "./parseRequestParams.ts";
+import { bcrypt } from "../deps.ts";
 
-export const handlePost = ({
-  slug,
-  body,
-  contentType,
-  noResponse,
-  redirectToGet,
-  origin,
-}: Params) => {
+export const handlePost = async (
+  { slug, body, contentType, noResponse, redirectToGet, authorization }: Params,
+  origin: string
+) => {
   const existingContent = get(slug);
   if (existingContent) return new Response("already exists", { status: 400 });
 
@@ -16,7 +13,12 @@ export const handlePost = ({
   if (body.length > 32 * 1024)
     return new Response("too large", { status: 400 });
 
-  set(slug, body, contentType);
+  set(
+    slug,
+    body,
+    contentType,
+    authorization ? await bcrypt.hash(authorization) : undefined
+  );
 
   if (noResponse) return new Response(undefined, { status: 201 });
 
