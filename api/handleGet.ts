@@ -2,11 +2,11 @@ import { bcrypt } from "../deps.ts";
 import { get } from "../store.ts";
 import { Params } from "./parseRequestParams.ts";
 
-const authorizationMatches = async (
+const authorizationMatches = (
   passedAuthorization: string,
   existingAuthorization: string
 ) => {
-  if (await bcrypt.compare(passedAuthorization, existingAuthorization))
+  if (bcrypt.compareSync(passedAuthorization, existingAuthorization))
     return true;
 
   if (passedAuthorization.startsWith("Basic ")) {
@@ -16,7 +16,7 @@ const authorizationMatches = async (
 
     if (
       withoutUsername !== passedAuthorization &&
-      (await bcrypt.compare(withoutUsername, existingAuthorization))
+      bcrypt.compareSync(withoutUsername, existingAuthorization)
     )
       return true;
   }
@@ -24,7 +24,7 @@ const authorizationMatches = async (
   return false;
 };
 
-export const handleGet = async ({
+export const handleGet = ({
   slug,
   authorization: passedAuthorization,
 }: Params) => {
@@ -42,7 +42,7 @@ export const handleGet = async ({
   if (
     existingAuthorization &&
     (!passedAuthorization ||
-      !(await authorizationMatches(passedAuthorization, existingAuthorization)))
+      !authorizationMatches(passedAuthorization, existingAuthorization))
   )
     return new Response(undefined, {
       status: 401,

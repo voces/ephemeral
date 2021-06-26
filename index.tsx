@@ -21,7 +21,7 @@ addEventListener("fetch", async (event) => {
 
   // If we have a slug, we're using the API
   if (params.slug.length) {
-    return event.respondWith(await handleRequest(params, event.request));
+    return event.respondWith(handleRequest(params, event.request));
   }
 
   return event.respondWith(

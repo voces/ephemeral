@@ -2,7 +2,7 @@ import { get, set } from "../store.ts";
 import { Params } from "./parseRequestParams.ts";
 import { bcrypt } from "../deps.ts";
 
-export const handlePost = async (
+export const handlePost = (
   { slug, body, contentType, noResponse, redirectToGet, authorization }: Params,
   origin: string
 ) => {
@@ -17,7 +17,7 @@ export const handlePost = async (
     slug,
     body,
     contentType,
-    authorization ? await bcrypt.hash(authorization) : undefined
+    authorization ? bcrypt.hashSync(authorization) : undefined
   );
 
   if (noResponse) return new Response(undefined, { status: 201 });
