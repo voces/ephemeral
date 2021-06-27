@@ -9,8 +9,15 @@ const random = <T extends unknown>(arr: T[]): T =>
 
 export const App = () => (
   <>
-    <header>
-      <span style={{ fontSize: "125%", fontStyle: "italic" }}>ephemeral</span>
+    <header style={{ fontSize: "125%" }}>
+      <span style={{ fontStyle: "italic" }}>ephemeral</span>
+      <a
+        style={{ float: "right", width: "1.1em", height: "1.1em" }}
+        title="View on GitHub"
+        href="https://github.com/voces/ephemeral"
+      >
+        <img src="github.svg" style={{ width: "100%" }} />
+      </a>
     </header>
     <form
       style={{

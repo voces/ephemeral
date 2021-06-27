@@ -2,6 +2,7 @@ import { parseRequest } from "./api/parseRequestParams.ts";
 import { handleRequest } from "./api/handleRequest.ts";
 import { h, renderToString } from "./deps.ts";
 import { App } from "./webapp/App.tsx";
+import { statics } from "./webapp/statics.ts";
 
 const css = await fetch(
   import.meta.url.split("/").slice(0, -1).join("/") + "/webapp/style.css"
@@ -19,10 +20,12 @@ addEventListener("fetch", async (event) => {
 
   const params = await parseRequest(event.request);
 
-  // If we have a slug, we're using the API
-  if (params.slug.length) {
+  if (params.slug in statics)
+    return event.respondWith(new Response(...statics[params.slug]));
+
+  if (params.slug.length)
+    // If we have a slug, we're using the API
     return event.respondWith(handleRequest(params, event.request));
-  }
 
   return event.respondWith(
     new Response(
