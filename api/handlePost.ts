@@ -3,7 +3,15 @@ import { Params } from "./parseRequestParams.ts";
 import { bcrypt } from "../deps.ts";
 
 export const handlePost = (
-  { slug, body, contentType, noResponse, redirectToGet, authorization }: Params,
+  {
+    slug,
+    body,
+    contentType,
+    noResponse,
+    redirectToGet,
+    authorization,
+    expiresAt,
+  }: Params,
   origin: string
 ) => {
   const existingContent = get(slug);
@@ -13,12 +21,12 @@ export const handlePost = (
   if (body.length > 32 * 1024)
     return new Response("too large", { status: 400 });
 
-  set(
-    slug,
-    body,
+  set(slug, {
+    content: body,
     contentType,
-    authorization ? bcrypt.hashSync(authorization) : undefined
-  );
+    authorization: authorization ? bcrypt.hashSync(authorization) : undefined,
+    expiresAt,
+  });
 
   if (noResponse) return new Response(undefined, { status: 201 });
 

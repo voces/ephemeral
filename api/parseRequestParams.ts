@@ -4,7 +4,26 @@ export type Params = {
   noResponse: boolean;
   contentType: string;
   redirectToGet: boolean;
-  authorization?: string;
+  authorization: string | undefined;
+  expiresAt: Date | undefined;
+};
+
+const extractExpiresAt = (request: Request, searchParams: URLSearchParams) => {
+  const header = request.headers.get("Expires");
+  if (header)
+    try {
+      return new Date(header);
+    } catch {
+      /* do nothing */
+    }
+
+  const param = searchParams.get("expires");
+  if (param)
+    try {
+      return new Date(param);
+    } catch {
+      /* do nothing */
+    }
 };
 
 export const parseRequest = async (request: Request): Promise<Params> => {
@@ -45,5 +64,15 @@ export const parseRequest = async (request: Request): Promise<Params> => {
       : undefined
     : request.headers.get("Authorization") ?? undefined;
 
-  return { slug, noResponse, body, contentType, redirectToGet, authorization };
+  const expiresAt = extractExpiresAt(request, searchParams);
+
+  return {
+    slug,
+    noResponse,
+    body,
+    contentType,
+    redirectToGet,
+    authorization,
+    expiresAt,
+  };
 };

@@ -1,34 +1,56 @@
+import { BinaryHeap } from "./util/BinaryHeap.ts";
+
+const DEFAULT_EXPIRATION = 1000 * 60 * 60; // 1 hour
+
 type Resource = {
   content: string;
   contentType: string;
   authorization: string | undefined;
+  createdAt: number;
+  expiresAt: number;
 };
-
 const store: Record<string, Resource | undefined> = {};
+
+type Node = { slug: string; expiresAt: number };
+const expiries = new BinaryHeap<Node>((node) => node.expiresAt);
 
 const channel = new BroadcastChannel("store");
 
 channel.onmessage = (event: MessageEvent) => {
-  const { action, slug, content, contentType, authorization } = JSON.parse(
-    event.data
-  ) as Resource & { action: "add"; slug: string };
-  if (action === "add") store[slug] = { content, contentType, authorization };
+  const { slug, resource } = JSON.parse(event.data) as {
+    slug: string;
+    resource: Resource;
+  };
+  expiries.push({ slug, expiresAt: resource.expiresAt });
+  store[slug] = resource;
 };
 
 export const set = (
   slug: string,
-  content: string,
-  contentType: string,
-  authorization?: string
+  resource: Omit<Resource, "expiresAt" | "createdAt"> & {
+    expiresAt: Date | undefined;
+  }
 ) => {
-  store[slug] = { content, contentType, authorization };
-  channel.postMessage({
-    action: "add",
-    slug,
-    content,
-    contentType,
-    authorization,
-  });
+  const expiresAt =
+    resource.expiresAt?.getTime() ?? Date.now() + DEFAULT_EXPIRATION;
+  const createdAt = Date.now();
+
+  store[slug] = { ...resource, expiresAt, createdAt };
+  expiries.push({ slug, expiresAt });
+
+  channel.postMessage({ slug, resource: store[slug] });
 };
 
 export const get = (slug: string): Resource | undefined => store[slug];
+
+setInterval(() => {
+  try {
+    const now = Date.now();
+    while (expiries.length > 0 && expiries[0].expiresAt <= now) {
+      const { slug } = expiries.pop();
+      delete store[slug];
+    }
+  } catch {
+    /* do nothing*/
+  }
+}, 1000);
