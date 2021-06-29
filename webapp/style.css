@@ -42,6 +42,28 @@ header {
   margin-bottom: 1em;
 }
 
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25em;
+  align-items: flex-end;
+  margin-bottom: 1em;
+  margin-top: 0.25em;
+  width: 100%;
+  max-width: 100%;
+}
+
+@media only screen and (max-width: 450px) {
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls button {
+    margin-top: 0.75em;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   body {
     background-color: #1e1e1e;

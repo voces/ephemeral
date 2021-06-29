@@ -40,19 +40,14 @@ export const App = () => (
         }}
         placeholder={JSON.stringify({ foo: "bar" }, null, 2)}
       />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: "0.25em",
-          alignItems: "flex-end",
-          marginBottom: "1em",
-          marginTop: "0.25em",
-          width: "100%",
-          maxWidth: "100%",
-        }}
-      >
-        <Input name="password" label="Password" type="password" />
+      <div class="controls">
+        <Input
+          name="password"
+          label="Password"
+          type="password"
+          divStyle={{ flexShrink: 1 }}
+          inputStyle={{ width: "calc(100% - 0.5em - 2px)" }}
+        />
         <Input
           name="path"
           placeholder="file.json"
