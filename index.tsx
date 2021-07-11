@@ -15,21 +15,18 @@ type FetchEvent = {
 
 const isFetchEvent = (event: Event | FetchEvent): event is FetchEvent => true;
 
-addEventListener("fetch", async (event) => {
-  if (!isFetchEvent(event)) return;
+const handler = async (request: Request) => {
+  const params = await parseRequest(request);
 
-  const params = await parseRequest(event.request);
+  if (params.slug in statics) return new Response(...statics[params.slug]);
 
-  if (params.slug in statics)
-    return event.respondWith(new Response(...statics[params.slug]));
-
-  if (params.slug.length)
+  if (params.slug.length) {
     // If we have a slug, we're using the API
-    return event.respondWith(handleRequest(params, event.request));
+    return handleRequest(params, request);
+  }
 
-  return event.respondWith(
-    new Response(
-      `<!DOCTYPE html>
+  return new Response(
+    `<!DOCTYPE html>
 ${renderToString(
   <html>
     <head>
@@ -41,7 +38,14 @@ ${renderToString(
     </body>
   </html>
 )}`,
-      { headers: { "Content-Type": "text/html" } }
-    )
+    { headers: { "Content-Type": "text/html" } }
   );
+};
+
+addEventListener("fetch", async (event) => {
+  const start = Date.now();
+  if (!isFetchEvent(event)) return;
+  const response = await handler(event.request);
+  console.log(response.status, event.request.url, Date.now() - start + "ms");
+  event.respondWith(response);
 });
