@@ -17,14 +17,14 @@ const expiries = new BinaryHeap<Node>((node) => node.expiresAt);
 const channel = new BroadcastChannel("store");
 
 channel.onmessage = (event: MessageEvent) => {
-  let data;
-  try {
-    data = JSON.parse(event.data);
-  } catch (err) {
-    console.log(event.data);
-    throw err;
-  }
-  const { slug, resource } = data as {
+  // let data;
+  // try {
+  //   data = JSON.parse(event.data);
+  // } catch (err) {
+  //   console.log(event.data);
+  //   throw err;
+  // }
+  const { slug, resource } = event.data as {
     slug: string;
     resource: Resource;
   };
