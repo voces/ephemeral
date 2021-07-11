@@ -46,6 +46,11 @@ addEventListener("fetch", async (event) => {
   const start = Date.now();
   if (!isFetchEvent(event)) return;
   const response = await handler(event.request);
-  console.log(response.status, event.request.url, Date.now() - start + "ms");
+  console.log(
+    event.request.method,
+    event.request.url,
+    response.status,
+    Date.now() - start + "ms"
+  );
   event.respondWith(response);
 });
