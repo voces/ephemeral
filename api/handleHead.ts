@@ -2,18 +2,14 @@ import { get } from "../store.ts";
 import { authorizationMatches } from "../util/auth.ts";
 import { Params } from "./parseRequestParams.ts";
 
-export const handleGet = ({
+export const handleHead = ({
   slug,
   authorization: passedAuthorization,
 }: Params) => {
   const existingContent = get(slug);
   if (!existingContent) return new Response("not found", { status: 404 });
 
-  const {
-    content,
-    contentType,
-    authorization: existingAuthorization,
-  } = existingContent;
+  const { contentType, authorization: existingAuthorization } = existingContent;
 
   // 401 if auth mismatch; note we will always 401 (not 403) and prompt for
   // basic auth
@@ -27,7 +23,7 @@ export const handleGet = ({
       headers: { "WWW-Authenticate": "Basic" },
     });
 
-  return new Response(content, {
+  return new Response(undefined, {
     headers: { "Content-Type": contentType },
   });
 };
