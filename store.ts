@@ -43,6 +43,8 @@ export const set = (
 
 export const get = (slug: string): Resource | undefined => store[slug];
 
+export const has = (slug: string): boolean => slug in store;
+
 setInterval(() => {
   try {
     const now = Date.now();
