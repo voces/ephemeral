@@ -1,7 +1,6 @@
 import { BinaryHeap } from "./util/BinaryHeap.ts";
-import { generate as generateUUID } from "https://deno.land/std@0.106.0/uuid/v4.ts";
 
-const id = generateUUID();
+const id = globalThis.crypto.randomUUID();
 
 const DEFAULT_EXPIRATION = 1000 * 60 * 60; // 1 hour
 
@@ -55,8 +54,10 @@ const channel = new TypedBroadcastChannel(({ data }) => {
     expiries.push({ slug, expiresAt: resource.expiresAt });
     store[slug] = resource;
   } else if (data.type === "keys") {
-    console.log("sending keys:", Object.keys(store));
-    channel.postMessage({ type: "onKeys", id, keys: Object.keys(store) });
+    const keys = Object.keys(store);
+    if (keys.length === 0) return;
+    console.log("sending keys:", keys);
+    channel.postMessage({ type: "onKeys", id, keys: keys });
   } else if (data.type === "onKeys") {
     actuallyFetchingKeys = true;
     const { keys, id } = data;
@@ -67,21 +68,20 @@ const channel = new TypedBroadcastChannel(({ data }) => {
       loadingStore.add(key);
       keysToResolve.push(key);
     }
-    console.log("resolve keys:", keysToResolve);
-    channel.postMessage({ type: "resolve", keys: keysToResolve, origin: id });
+    if (keysToResolve.length > 0) {
+      console.log("resolve keys:", keysToResolve);
+      channel.postMessage({ type: "resolve", keys: keysToResolve, origin: id });
+    }
   } else if (data.type === "resolve") {
     const { origin, keys } = data;
     if (origin !== id) return;
-    console.log(
-      "resolving keys:",
-      keys.map((key) => [key, store[key]]).filter(([, v]) => v).map(([k]) => k),
+    const resolutions = Object.fromEntries(
+      keys.map((key) => [key, store[key]]).filter(([, v]) => v),
     );
-    channel.postMessage({
-      type: "onResolve",
-      store: Object.fromEntries(
-        keys.map((key) => [key, store[key]]).filter(([, v]) => v),
-      ),
-    });
+    if (Object.keys(resolutions > 0)) {
+      console.log("resolving keys:", resolutions);
+      channel.postMessage({ type: "onResolve", store: resolutions });
+    }
   } else if (data.type === "onResolve") {
     console.log(
       "resolved keys:",
