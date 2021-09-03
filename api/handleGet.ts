@@ -2,11 +2,11 @@ import { get } from "../store.ts";
 import { authorizationMatches } from "../util/auth.ts";
 import { Params } from "./parseRequestParams.ts";
 
-export const handleGet = ({
+export const handleGet = async ({
   slug,
   authorization: passedAuthorization,
 }: Params) => {
-  const existingContent = get(slug);
+  const existingContent = await get(slug);
   if (!existingContent) return new Response("not found", { status: 404 });
 
   const {

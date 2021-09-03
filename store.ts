@@ -99,12 +99,18 @@ const channel = new TypedBroadcastChannel(({ data }) => {
 
 channel.postMessage({ type: "keys" });
 console.log("load store");
-await Promise.race([
+
+const ready = Promise.race([
   resolvingKeys,
   new Promise<void>((resolve) =>
     setTimeout(() => {
-      if (actuallyFetchingKeys) setTimeout(resolve, 2_000);
-      else resolve();
+      console.log("timed out on initial resolution", { actuallyFetchingKeys });
+      if (actuallyFetchingKeys) {
+        setTimeout(() => {
+          console.log("final timeout on resolution");
+          resolve();
+        }, 2_000);
+      } else resolve();
     }, 2_000)
   ),
 ]);
@@ -125,7 +131,10 @@ export const set = (
   channel.postMessage({ type: "set", slug, resource: store[slug]! });
 };
 
-export const get = (slug: string): Resource | undefined => store[slug];
+export const get = async (slug: string): Promise<Resource | undefined> => {
+  await ready;
+  return store[slug];
+};
 
 export const has = (slug: string): boolean => slug in store;
 

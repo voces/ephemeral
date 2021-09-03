@@ -2,7 +2,7 @@ import { get, set } from "../store.ts";
 import { Params } from "./parseRequestParams.ts";
 import { bcrypt } from "../deps.ts";
 
-export const handlePost = (
+export const handlePost = async (
   {
     slug,
     body,
@@ -12,17 +12,19 @@ export const handlePost = (
     authorization,
     expiresAt,
   }: Params,
-  origin: string
+  origin: string,
 ) => {
-  const existingContent = get(slug);
+  const existingContent = await get(slug);
   if (existingContent) return new Response("already exists", { status: 400 });
 
   // Limit to 32KiB
-  if (body.length > 32 * 1024)
+  if (body.length > 32 * 1024) {
     return new Response("too large", { status: 400 });
+  }
 
-  if (body.trim().length === 0)
+  if (body.trim().length === 0) {
     return new Response("too small", { status: 400 });
+  }
 
   set(slug, {
     content: body,
@@ -34,11 +36,12 @@ export const handlePost = (
   if (noResponse) return new Response(undefined, { status: 201 });
 
   // If we post via form body, the slug won't actually match
-  if (redirectToGet)
+  if (redirectToGet) {
     return new Response(undefined, {
       status: 303,
       headers: { Location: `${origin}/${slug}` },
     });
+  }
 
   return new Response(body, {
     headers: {
