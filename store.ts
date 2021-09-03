@@ -48,19 +48,26 @@ const channel = new TypedBroadcastChannel(({ data }) => {
     expiries.push({ slug, expiresAt: resource.expiresAt });
     store[slug] = resource;
   } else if (data.type === "keys") {
+    console.log("sending keys:", Object.keys(store));
     channel.postMessage({ type: "onKeys", id, keys: Object.keys(store) });
   } else if (data.type === "onKeys") {
     const { keys, id } = data;
+    console.log("from", id, "received keys:", keys);
     const keysToResolve: string[] = [];
     for (const key of keys) {
       if (loadingStore.has(key)) continue;
       loadingStore.add(key);
       keysToResolve.push(key);
     }
+    console.log("resolve keys:", keysToResolve);
     channel.postMessage({ type: "resolve", keys: keysToResolve, origin: id });
   } else if (data.type === "resolve") {
     const { origin, keys } = data;
     if (origin !== id) return;
+    console.log(
+      "resolving keys:",
+      keys.map((key) => [key, store[key]]).filter(([, v]) => v).map(([k]) => k),
+    );
     channel.postMessage({
       type: "onResolve",
       store: Object.fromEntries(
@@ -68,6 +75,10 @@ const channel = new TypedBroadcastChannel(({ data }) => {
       ),
     });
   } else if (data.type === "onResolve") {
+    console.log(
+      "resolved keys:",
+      Object.keys(data.store),
+    );
     Object.assign(store, data.store);
     for (const slug in data.store) {
       expiries.push({ slug, expiresAt: data.store[slug].expiresAt });
