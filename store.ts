@@ -109,9 +109,9 @@ const ready = Promise.race([
         setTimeout(() => {
           console.log("final timeout on resolution");
           resolve();
-        }, 2_000);
+        }, 5_000);
       } else resolve();
-    }, 2_000)
+    }, 5_000)
   ),
 ]);
 
