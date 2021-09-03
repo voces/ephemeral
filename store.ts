@@ -42,6 +42,13 @@ function assertUnreachable(_x: never): never {
   throw new Error("Didn't expect to get here");
 }
 
+let actuallyFetchingKeys = false;
+
+let resolvingKeysDone: () => void;
+const resolvingKeys = new Promise<void>((resolve) =>
+  resolvingKeysDone = resolve
+);
+
 const channel = new TypedBroadcastChannel(({ data }) => {
   if (data.type === "set") {
     const { slug, resource } = data;
@@ -51,6 +58,7 @@ const channel = new TypedBroadcastChannel(({ data }) => {
     console.log("sending keys:", Object.keys(store));
     channel.postMessage({ type: "onKeys", id, keys: Object.keys(store) });
   } else if (data.type === "onKeys") {
+    actuallyFetchingKeys = true;
     const { keys, id } = data;
     console.log("from", id, "received keys:", keys);
     const keysToResolve: string[] = [];
@@ -83,6 +91,7 @@ const channel = new TypedBroadcastChannel(({ data }) => {
     for (const slug in data.store) {
       expiries.push({ slug, expiresAt: data.store[slug].expiresAt });
     }
+    resolvingKeysDone();
   } else {
     assertUnreachable(data);
   }
@@ -90,6 +99,15 @@ const channel = new TypedBroadcastChannel(({ data }) => {
 
 channel.postMessage({ type: "keys" });
 console.log("load store");
+await Promise.race([
+  resolvingKeys,
+  new Promise<void>((resolve) =>
+    setTimeout(() => {
+      if (actuallyFetchingKeys) setTimeout(resolve, 2_000);
+      else resolve();
+    }, 2_000)
+  ),
+]);
 
 export const set = (
   slug: string,
