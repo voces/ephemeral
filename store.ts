@@ -89,6 +89,7 @@ const channel = new TypedBroadcastChannel(({ data }) => {
 });
 
 channel.postMessage({ type: "keys" });
+console.log("load store");
 
 export const set = (
   slug: string,
