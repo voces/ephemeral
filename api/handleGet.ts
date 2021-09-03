@@ -21,11 +21,12 @@ export const handleGet = ({
     existingAuthorization &&
     (!passedAuthorization ||
       !authorizationMatches(passedAuthorization, existingAuthorization))
-  )
+  ) {
     return new Response(undefined, {
       status: 401,
       headers: { "WWW-Authenticate": "Basic" },
     });
+  }
 
   return new Response(content, {
     headers: { "Content-Type": contentType },
