@@ -1,8 +1,6 @@
-import { BinaryHeap } from "./util/BinaryHeap.ts";
-
-const id = globalThis.crypto.randomUUID();
-
-const DEFAULT_EXPIRATION = 1000 * 60 * 60; // 1 hour
+// Resources live for a sliding 15-minute window: the clock resets on every
+// access, so an item only disappears after 15 minutes of *inactivity*.
+const DEFAULT_TTL = 1000 * 60 * 15; // 15 minutes
 
 type Resource = {
   content: string;
@@ -10,142 +8,68 @@ type Resource = {
   authorization: string | undefined;
   createdAt: number;
   expiresAt: number;
+  // Sliding window in ms, refreshed on each access. `undefined` means the
+  // caller pinned a fixed `Expires`, which we honor as an absolute deadline.
+  ttl: number | undefined;
 };
-const store: Record<string, Resource | undefined> = {};
-const loadingStore = new Set<string>();
 
-type Node = { slug: string; expiresAt: number };
-const expiries = new BinaryHeap<Node>((node) => node.expiresAt);
+const kv = await Deno.openKv();
 
-type TypedMessage =
-  | { type: "set"; slug: string; resource: Resource }
-  | { type: "keys" }
-  | { type: "onKeys"; id: string; keys: string[] }
-  | { type: "resolve"; keys: string[]; origin: string }
-  | { type: "onResolve"; store: Record<string, Resource> };
+const key = (slug: string) => ["resource", slug];
 
-class TypedBroadcastChannel {
-  private channel: BroadcastChannel;
+const persist = (slug: string, resource: Resource) => {
+  // `expireIn` (ms from now) lets Deno KV reclaim the key server-side. We also
+  // check `expiresAt` on read since KV's TTL cleanup can be lazy.
+  const expireIn = Math.max(1, resource.expiresAt - Date.now());
+  return kv.set(key(slug), resource, { expireIn });
+};
 
-  constructor(onmessage: (event: MessageEvent<TypedMessage>) => void) {
-    this.channel = new BroadcastChannel("store");
-    this.channel.onmessage = onmessage;
-  }
-
-  postMessage(message: TypedMessage) {
-    this.channel.postMessage(message);
-  }
-}
-
-function assertUnreachable(_x: never): never {
-  throw new Error("Didn't expect to get here");
-}
-
-let actuallyFetchingKeys = false;
-
-let resolvingKeysDone: () => void;
-const resolvingKeys = new Promise<void>((resolve) =>
-  resolvingKeysDone = resolve
-);
-
-const channel = new TypedBroadcastChannel(({ data }) => {
-  if (data.type === "set") {
-    const { slug, resource } = data;
-    expiries.push({ slug, expiresAt: resource.expiresAt });
-    store[slug] = resource;
-  } else if (data.type === "keys") {
-    const keys = Object.keys(store);
-    if (keys.length === 0) return;
-    console.log("sending keys:", keys);
-    channel.postMessage({ type: "onKeys", id, keys: keys });
-  } else if (data.type === "onKeys") {
-    actuallyFetchingKeys = true;
-    const { keys, id } = data;
-    console.log("from", id, "received keys:", keys);
-    const keysToResolve: string[] = [];
-    for (const key of keys) {
-      if (loadingStore.has(key)) continue;
-      loadingStore.add(key);
-      keysToResolve.push(key);
-    }
-    if (keysToResolve.length > 0) {
-      console.log("resolve keys:", keysToResolve);
-      channel.postMessage({ type: "resolve", keys: keysToResolve, origin: id });
-    }
-  } else if (data.type === "resolve") {
-    const { origin, keys } = data;
-    if (origin !== id) return;
-    const resolutions = Object.fromEntries(
-      keys.map((key) => [key, store[key]]).filter(([, v]) => v),
-    );
-    if (Object.keys(resolutions > 0)) {
-      console.log("resolving keys:", resolutions);
-      channel.postMessage({ type: "onResolve", store: resolutions });
-    }
-  } else if (data.type === "onResolve") {
-    console.log(
-      "resolved keys:",
-      Object.keys(data.store),
-    );
-    Object.assign(store, data.store);
-    for (const slug in data.store) {
-      expiries.push({ slug, expiresAt: data.store[slug].expiresAt });
-    }
-    resolvingKeysDone();
-  } else {
-    assertUnreachable(data);
-  }
-});
-
-channel.postMessage({ type: "keys" });
-console.log("load store");
-
-const ready = Promise.race([
-  resolvingKeys,
-  new Promise<void>((resolve) =>
-    setTimeout(() => {
-      console.log("timed out on initial resolution", { actuallyFetchingKeys });
-      if (actuallyFetchingKeys) {
-        setTimeout(() => {
-          console.log("final timeout on resolution");
-          resolve();
-        }, 5_000);
-      } else resolve();
-    }, 5_000)
-  ),
-]);
-
-export const set = (
+export const set = async (
   slug: string,
-  resource: Omit<Resource, "expiresAt" | "createdAt"> & {
+  resource: Omit<Resource, "expiresAt" | "createdAt" | "ttl"> & {
     expiresAt: Date | undefined;
   },
-) => {
-  const expiresAt = resource.expiresAt?.getTime() ??
-    Date.now() + DEFAULT_EXPIRATION;
-  const createdAt = Date.now();
+): Promise<void> => {
+  const now = Date.now();
 
-  store[slug] = { ...resource, expiresAt, createdAt };
-  expiries.push({ slug, expiresAt });
+  // A caller-supplied `Expires` is a fixed deadline; otherwise the item uses a
+  // sliding window that refreshes on each access.
+  const ttl = resource.expiresAt ? undefined : DEFAULT_TTL;
+  const expiresAt = resource.expiresAt?.getTime() ?? now + DEFAULT_TTL;
 
-  channel.postMessage({ type: "set", slug, resource: store[slug]! });
+  await persist(slug, {
+    content: resource.content,
+    contentType: resource.contentType,
+    authorization: resource.authorization,
+    createdAt: now,
+    expiresAt,
+    ttl,
+  });
 };
 
 export const get = async (slug: string): Promise<Resource | undefined> => {
-  await ready;
-  return store[slug];
+  const { value } = await kv.get<Resource>(key(slug));
+  if (!value) return undefined;
+
+  const now = Date.now();
+  if (value.expiresAt <= now) {
+    await kv.delete(key(slug));
+    return undefined;
+  }
+
+  // Sliding expiration: each access pushes the deadline out by the TTL window.
+  if (value.ttl !== undefined) {
+    const refreshed = { ...value, expiresAt: now + value.ttl };
+    await persist(slug, refreshed);
+    return refreshed;
+  }
+
+  return value;
 };
 
-export const has = (slug: string): boolean => slug in store;
-
-setInterval(() => {
-  try {
-    const now = Date.now();
-    while (expiries.length > 0 && expiries[0].expiresAt <= now) {
-      const { slug } = expiries.pop();
-      delete store[slug];
-    }
-  } catch {
-    /* do nothing*/
-  }
-}, 1000);
+export const has = async (slug: string): Promise<boolean> => {
+  // A bare existence probe (used for OPTIONS) — does not count as an access, so
+  // it never slides the expiry.
+  const { value } = await kv.get<Resource>(key(slug));
+  return value !== null && value.expiresAt > Date.now();
+};

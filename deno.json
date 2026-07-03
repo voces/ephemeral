@@ -1,8 +1,9 @@
 {
   "tasks": {
-    "dev": "deno run --watch --allow-import --allow-net --allow-read --allow-env index.tsx",
-    "start": "deno run --allow-import --allow-net --allow-read --allow-env index.tsx"
+    "dev": "deno run --watch --unstable-kv --allow-import --allow-net --allow-read --allow-write --allow-env index.tsx",
+    "start": "deno run --unstable-kv --allow-import --allow-net --allow-read --allow-write --allow-env index.tsx"
   },
+  "unstable": ["kv"],
   "compilerOptions": {
     "jsx": "react",
     "jsxFactory": "h",
