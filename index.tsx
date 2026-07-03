@@ -4,16 +4,9 @@ import { h, renderToString } from "./deps.ts";
 import { App } from "./webapp/App.tsx";
 import { statics } from "./webapp/statics.ts";
 
-const css = await fetch(
-  import.meta.url.split("/").slice(0, -1).join("/") + "/webapp/style.css"
-).then((r) => r.text());
-
-type FetchEvent = {
-  request: Request;
-  respondWith: (response: Response) => void;
-};
-
-const isFetchEvent = (event: Event | FetchEvent): event is FetchEvent => true;
+const css = await Deno.readTextFile(
+  new URL("./webapp/style.css", import.meta.url),
+);
 
 const handler = async (request: Request) => {
   const params = await parseRequest(request);
@@ -27,30 +20,34 @@ const handler = async (request: Request) => {
 
   return new Response(
     `<!DOCTYPE html>
-${renderToString(
-  <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <style>{css}</style>
-    </head>
-    <body>
-      <App />
-    </body>
-  </html>
-)}`,
-    { headers: { "Content-Type": "text/html" } }
+${
+      renderToString(
+        <html>
+          <head>
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1"
+            />
+            <style>{css}</style>
+          </head>
+          <body>
+            <App />
+          </body>
+        </html>,
+      )
+    }`,
+    { headers: { "Content-Type": "text/html" } },
   );
 };
 
-addEventListener("fetch", async (event) => {
+Deno.serve(async (request) => {
   const start = Date.now();
-  if (!isFetchEvent(event)) return;
-  const response = await handler(event.request);
+  const response = await handler(request);
   console.log(
-    event.request.method,
-    event.request.url,
+    request.method,
+    request.url,
     response.status,
-    Date.now() - start + "ms"
+    Date.now() - start + "ms",
   );
-  event.respondWith(response);
+  return response;
 });

@@ -1,8 +1,7 @@
 {
   "deno.enable": true,
   "deno.lint": true,
-  "deno.unstable": true,
-  "deno.config": "tsconfig.json",
+  "deno.config": "deno.json",
   "editor.defaultFormatter": "denoland.vscode-deno",
   "editor.formatOnSave": true
 }
