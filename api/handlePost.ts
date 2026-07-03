@@ -26,7 +26,7 @@ export const handlePost = async (
     return new Response("too small", { status: 400 });
   }
 
-  set(slug, {
+  await set(slug, {
     content: body,
     contentType,
     authorization: authorization ? bcrypt.hashSync(authorization) : undefined,
