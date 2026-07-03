@@ -1,0 +1,14 @@
+{
+  "tasks": {
+    "dev": "deno run --watch --allow-import --allow-net --allow-read --allow-env index.tsx",
+    "start": "deno run --allow-import --allow-net --allow-read --allow-env index.tsx"
+  },
+  "compilerOptions": {
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment"
+  },
+  "deploy": {
+    "entrypoint": "index.tsx"
+  }
+}

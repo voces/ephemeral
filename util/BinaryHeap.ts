@@ -6,11 +6,11 @@ export class BinaryHeap<T> extends Array<T> {
     this.scoreFunc = scoreFunc;
   }
 
-  push(element: T): number {
+  override push(element: T): number {
     return this.bubbleUp(super.push(element) - 1);
   }
 
-  pop(): T {
+  override pop(): T {
     const top = this[0];
     const bottom = super.pop();
 
@@ -66,9 +66,10 @@ export class BinaryHeap<T> extends Array<T> {
 
         if (
           this.scoreFunc(right) <
-          (swapIndex === undefined ? score : (leftScore as number))
-        )
+            (swapIndex === undefined ? score : (leftScore as number))
+        ) {
           swapIndex = rightIndex;
+        }
       }
 
       if (swapIndex === undefined) break;
