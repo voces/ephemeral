@@ -60,11 +60,7 @@ are `/etc/systemd/system/ephemeral.service`,
    there; if w3xio doesn't run as `ubuntu`, set `EPHEMERAL_DIR` in its
    environment to wherever the checkout lives (default
    `/home/ubuntu/ephemeral`).
-6. **Workflow:** `deploy/deploy-workflow.yml` is the workflow, kept out of
-   `.github/workflows/` only because the session that wrote it couldn't push
-   there. Install it once:
-   `git mv deploy/deploy-workflow.yml .github/workflows/deploy.yml`.
-7. **GitHub secret:** set this repo's `DEPLOY_WEBHOOK_URL` to the same
+6. **GitHub secret:** set this repo's `DEPLOY_WEBHOOK_URL` to the same
    `https://dapi.w3x.io/deploy?token=<DEPLOY_SECRET>` the other apps use. Until
    it is set, the workflow only checks the code.
 
