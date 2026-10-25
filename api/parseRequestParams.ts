@@ -10,20 +10,22 @@ export type Params = {
 
 const extractExpiresAt = (request: Request, searchParams: URLSearchParams) => {
   const header = request.headers.get("Expires");
-  if (header)
+  if (header) {
     try {
       return new Date(header);
     } catch {
       /* do nothing */
     }
+  }
 
   const param = searchParams.get("expires");
-  if (param)
+  if (param) {
     try {
       return new Date(param);
     } catch {
       /* do nothing */
     }
+  }
 };
 
 export const parseRequest = async (request: Request): Promise<Params> => {
@@ -37,7 +39,7 @@ export const parseRequest = async (request: Request): Promise<Params> => {
         .split("&")
         .map((v) =>
           v.split("=").map((v) => decodeURIComponent(v.replace(/\+/g, " ")))
-        )
+        ),
     );
   }
 
@@ -45,9 +47,8 @@ export const parseRequest = async (request: Request): Promise<Params> => {
 
   const body = formBody?.["body"] ?? (await request.text());
 
-  const noResponse =
-    typeof searchParams.get("no-response") === "string" ??
-    (formBody && "no-response" in formBody);
+  const noResponse = searchParams.has("no-response") ||
+    (!!formBody && "no-response" in formBody);
 
   // Don't fallback to Content-Type if formBody specified, as it is going to be
   // x-www-form-urlencoded
@@ -59,9 +60,7 @@ export const parseRequest = async (request: Request): Promise<Params> => {
   const redirectToGet = !!formBody;
 
   const authorization = formBody
-    ? formBody.password
-      ? `Basic ${btoa(`:${formBody.password}`)}`
-      : undefined
+    ? formBody.password ? `Basic ${btoa(`:${formBody.password}`)}` : undefined
     : request.headers.get("Authorization") ?? undefined;
 
   const expiresAt = extractExpiresAt(request, searchParams);

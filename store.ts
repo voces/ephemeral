@@ -1,6 +1,8 @@
 // Resources live for one hour from creation by default; a caller-supplied
-// `Expires` sets an absolute deadline instead.
+// `Expires` sets an absolute deadline instead, capped at a day so the store
+// stays a scratch pad rather than long-term storage.
 const DEFAULT_EXPIRATION = 1000 * 60 * 60; // 1 hour
+const MAX_EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours
 
 type Resource = {
   content: string;
@@ -10,7 +12,9 @@ type Resource = {
   expiresAt: number;
 };
 
-const kv = await Deno.openKv();
+// KV_PATH names a local SQLite file (the box); unset uses the default
+// database, which on Deno Deploy is the hosted one.
+const kv = await Deno.openKv(Deno.env.get("KV_PATH"));
 
 const key = (slug: string) => ["resource", slug];
 
@@ -21,7 +25,11 @@ export const set = async (
   },
 ): Promise<void> => {
   const now = Date.now();
-  const expiresAt = resource.expiresAt?.getTime() ?? now + DEFAULT_EXPIRATION;
+  // An unparseable `Expires` is an Invalid Date, whose time is NaN.
+  const requested = resource.expiresAt?.getTime() ?? NaN;
+  const expiresAt = Number.isFinite(requested)
+    ? Math.min(requested, now + MAX_EXPIRATION)
+    : now + DEFAULT_EXPIRATION;
 
   const stored: Resource = {
     content: resource.content,

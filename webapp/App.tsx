@@ -1,4 +1,4 @@
-import { h, Fragment } from "../deps.ts";
+import { Fragment, h } from "../deps.ts";
 import { Input } from "./components/Input.tsx";
 import { commonContentTypes } from "./commonContentTypes.ts";
 import { adjectives } from "./adjectives.ts";

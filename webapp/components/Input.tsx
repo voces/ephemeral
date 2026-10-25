@@ -1,4 +1,4 @@
-import { h, VNode, Fragment, useState } from "../../deps.ts";
+import { Fragment, h, useState, VNode } from "../../deps.ts";
 
 export const Input = ({
   placeholder,
@@ -31,18 +31,16 @@ export const Input = ({
       type={type}
     />
   );
-  const content = dataListItems ? (
-    <>
-      <datalist id={`${uniqueId}-datalist`}>
-        {dataListItems.map((item) => (
-          <option>{item}</option>
-        ))}
-      </datalist>
-      {input}
-    </>
-  ) : (
-    input
-  );
+  const content = dataListItems
+    ? (
+      <>
+        <datalist id={`${uniqueId}-datalist`}>
+          {dataListItems.map((item) => <option key={item}>{item}</option>)}
+        </datalist>
+        {input}
+      </>
+    )
+    : input;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", ...divStyle }}>
