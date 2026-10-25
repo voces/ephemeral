@@ -1,0 +1,32 @@
+# Reference template for the systemd unit on the EC2 cohost. Nothing reads this
+# file live — the authoritative copy is /etc/systemd/system/ephemeral.service,
+# copied from here. Keep the two in sync (see deploy/README.md).
+[Unit]
+Description=ephemeral (Deno server)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/ephemeral
+
+# systemd doesn't set HOME; deno needs it for ~/.cache/deno.
+Environment=HOME=/home/ubuntu
+# Port 3060 must stay unique on the box; see "Box facts" in deploy/README.md.
+Environment=PORT=3060
+# The KV database, relative to WorkingDirectory. `deno task start` may write
+# only under data/ (gitignored).
+Environment=KV_PATH=data/kv.sqlite3
+
+ExecStart=/home/ubuntu/.deno/bin/deno task start
+
+# 143 is Deno's exit for an unhandled SIGTERM, which is how systemd stops it.
+SuccessExitStatus=143 SIGTERM
+
+SyslogIdentifier=ephemeral
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

@@ -1,9 +1,11 @@
 {
   "tasks": {
-    "dev": "deno run --watch --unstable-kv --allow-import --allow-net --allow-read --allow-write --allow-env index.tsx",
-    "start": "deno run --unstable-kv --allow-import --allow-net --allow-read --allow-write --allow-env index.tsx"
+    "dev": "deno run --watch --unstable-kv --allow-net --allow-read --allow-write --allow-env index.tsx",
+    "start": "deno run --unstable-kv --allow-net --allow-env=PORT,KV_PATH --allow-read=. --allow-write=data index.tsx"
   },
-  "unstable": ["kv"],
+  "unstable": [
+    "kv"
+  ],
   "compilerOptions": {
     "jsx": "react",
     "jsxFactory": "h",
@@ -11,5 +13,11 @@
   },
   "deploy": {
     "entrypoint": "index.tsx"
+  },
+  "imports": {
+    "preact": "npm:preact@10.5.12",
+    "preact/hooks": "npm:preact@10.5.12/hooks",
+    "preact-render-to-string": "npm:preact-render-to-string@5.2.6",
+    "bcryptjs": "npm:bcryptjs@3.0.3"
   }
 }

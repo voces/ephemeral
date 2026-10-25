@@ -40,7 +40,10 @@ ${
   );
 };
 
-Deno.serve(async (request) => {
+Deno.serve({
+  hostname: "127.0.0.1",
+  port: Number(Deno.env.get("PORT") ?? 8000),
+}, async (request) => {
   const start = Date.now();
   const response = await handler(request);
   console.log(

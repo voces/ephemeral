@@ -1,0 +1,39 @@
+name: Deploy
+
+# Deploys master to the EC2 cohost: checks the code, then tells the box to
+# fetch + checkout + restart via w3xio's /deploy webhook. The notify step
+# no-ops unless the DEPLOY_WEBHOOK_URL secret is set.
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# One deploy at a time, in order; a queued one isn't cancelled.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno fmt --check
+      - run: deno lint
+      - run: deno check index.tsx
+      - name: Notify deploy webhook
+        if: env.DEPLOY_WEBHOOK_URL
+        env:
+          # A secret URL that embeds the deploy token, e.g.
+          # https://dapi.w3x.io/deploy?token=<DEPLOY_SECRET>
+          DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        run: |
+          curl -sf -X POST "$DEPLOY_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{"app": "ephemeral", "version": "${{ github.sha }}"}'

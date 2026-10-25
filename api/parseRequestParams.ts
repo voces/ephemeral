@@ -45,9 +45,8 @@ export const parseRequest = async (request: Request): Promise<Params> => {
 
   const body = formBody?.["body"] ?? (await request.text());
 
-  const noResponse =
-    typeof searchParams.get("no-response") === "string" ??
-    (formBody && "no-response" in formBody);
+  const noResponse = searchParams.has("no-response") ||
+    (!!formBody && "no-response" in formBody);
 
   // Don't fallback to Content-Type if formBody specified, as it is going to be
   // x-www-form-urlencoded
