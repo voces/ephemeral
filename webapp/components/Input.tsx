@@ -35,7 +35,7 @@ export const Input = ({
     ? (
       <>
         <datalist id={`${uniqueId}-datalist`}>
-          {dataListItems.map((item) => <option>{item}</option>)}
+          {dataListItems.map((item) => <option key={item}>{item}</option>)}
         </datalist>
         {input}
       </>
